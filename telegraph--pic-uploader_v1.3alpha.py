@@ -33,7 +33,7 @@ if USE_PROXY:
 else:
     proxies = None
 
-#telegraph.create_account(short_name='Kris', author_name='Kris wu', author_url='', replace_token=True)
+telegraph.create_account(short_name='Kris', author_name='Kris wu', author_url='', replace_token=True)
 
 def get_title(directory):
     """
