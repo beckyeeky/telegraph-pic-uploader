@@ -21,7 +21,7 @@ https://telegra.ph/Telegraph-pic-uploader-08-14
 4. 程序优化：略微提升大图片压缩速度。
 5. 程序优化：默认上传间隔时间调整为2秒，建议根据你的网络环境自行设置。
 
-#新1.2版本
+# 1.2版本
 版本更新内容说明：
 1. 替换 Image.ANTIALIAS 为 Image.LANCZOS。
 2. 改善可读性
