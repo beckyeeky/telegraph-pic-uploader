@@ -7,7 +7,6 @@ from shutil import copyfile
 import imageio
 from telegraph import Telegraph
 import curses
-import six
 
 # 配置项
 USE_PROXY = True  # 设置是否使用代理
@@ -17,7 +16,8 @@ MAX_IMAGE_SIZE = 5600
 COMPRESS_TARGET_SIZE_KB = 5000
 COMPRESS_QUALITY = 85
 COMPRESS_RATIO = 0.8
-USE_ANONYMOUS = ""  # 设置是否使用匿名发布：可以为 True, False 或 ""
+USE_ANONYMOUS = ""  # 设置是否使用匿名发布：可以为 True, False 或 ""(上传时选择）
+UPLOAD_ALL_TO_ONE_PAGE = False  # 设置是否将所有图片上传到同一个页面
 
 # 从环境变量读取 TELEGRAPH_TOKEN，如果没有则使用默认值
 TELEGRAPH_TOKEN = os.getenv('Telegram_TPH_TOKEN', DEFAULT_TELEGRAPH_TOKEN)
@@ -80,7 +80,7 @@ if USE_ANONYMOUS == "":
     USE_ANONYMOUS = prompt_anonymous_mode()
 
 if USE_ANONYMOUS:
-    telegraph.create_account(short_name='Kris', author_name='Kris wu', author_url='', replace_token=True)
+    telegraph.create_account(short_name='Emanon', author_name='Emanon', author_url='', replace_token=True)
 
 def get_title(directory):
     """
@@ -204,14 +204,46 @@ def process_images(directory):
 
     return pics_html
 
+def process_all_images(root_folder):
+    """
+    处理所有目录中的图片并上传到同一个页面
+    """
+    pics_html = ""
+    for root, dirs, files in os.walk(root_folder):
+        img_list = [os.path.join(root, nm) for nm in files if nm.lower().endswith(('jpg', 'png', 'gif'))]
+
+        for img_path in img_list:
+            resized_path = resize_image(img_path, MAX_IMAGE_SIZE)
+            telegraph_url = telegraph_file_upload(resized_path)
+            print(telegraph_url)
+            if telegraph_url:
+                pics_html += f"<img src='{telegraph_url}'/> "
+            time.sleep(2)
+
+    return pics_html
+
 def main():
     print("Welcome!")
     links = []
 
-    while True:
-        root_folder = input("input folder:")
-        html_text = input("html content:")
+    root_folder = input("input folder:")
+    html_text = input("html content:")
 
+    if UPLOAD_ALL_TO_ONE_PAGE:
+        try:
+            print(f"Uploading all images in {root_folder} to one page")
+            html_imgs = process_all_images(root_folder)
+            response = telegraph.create_page(
+                title=get_title(root_folder),
+                html_content=html_text + html_imgs,
+                author_name='Emanon',
+                author_url=''
+            )
+            print(response['url'])
+            links.append(response['url'])
+        except Exception as e:
+            print(f"Error: {e}")
+    else:
         for root, dirs, files in os.walk(root_folder):
             folder_title = get_title(root)
             try:
@@ -221,7 +253,7 @@ def main():
                 response = telegraph.create_page(
                     title=folder_title,
                     html_content=html_text + html_imgs,
-                    author_name='Kris wu',
+                    author_name='Emanon',
                     author_url=''
                 )
                 print(response['url'])
@@ -230,9 +262,9 @@ def main():
                 print(f"Error: {e}")
                 break
 
-        print("\nHere are all page links:")
-        for link in links:
-            print(link)
+    print("\nHere are all page links:")
+    for link in links:
+        print(link)
 
 if __name__ == "__main__":
     main()
