@@ -7,6 +7,7 @@ from shutil import copyfile
 import imageio
 from telegraph import Telegraph
 import curses
+import six
 
 # 配置项
 USE_PROXY = True  # 设置是否使用代理
